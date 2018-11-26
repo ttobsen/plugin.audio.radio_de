@@ -41,6 +41,8 @@ class RadioApi():
     USER_AGENT = 'XBMC Addon Radio'
 
     PLAYLIST_PREFIXES = ('m3u', 'pls', 'asx', 'xml')
+    
+    MAX_ROWS = 100
 
     def __init__(self, language='english', user_agent=USER_AGENT):
         self.set_language(language)
@@ -90,11 +92,26 @@ class RadioApi():
         if not category_type in self.get_category_types():
             raise ValueError('Bad category_type')
         path = 'menu/broadcastsofcategory'
-        param = {
-            'category': '_%s' % category_type,
-            'value': category_value,
-        }
-        stations = self.__api_call(path, param)
+        start = 0
+        fetched_all_stations = False
+        stations = []
+        while not fetched_all_stations:
+            param = {
+                'category': '_%s' % category_type,
+                'value': category_value,
+                'start': str(start),
+                'rows': str(RadioApi.MAX_ROWS),
+            }
+            fetched_stations = self.__api_call(path, param)
+            
+            if len(fetched_stations) == 0:
+                fetched_all_stations = True
+            else:
+                start += RadioApi.MAX_ROWS
+                stations += fetched_stations
+        
+        self.log("get_stations_by_category Fetched " + str(len(stations)) + " stations.")
+            
         return self.__format_stations(stations)
 
     def search_stations_by_string(self, search_string):
