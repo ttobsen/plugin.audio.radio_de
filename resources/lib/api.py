@@ -103,11 +103,12 @@ class RadioApi():
                 'rows': str(RadioApi.MAX_ROWS),
             }
             fetched_stations = self.__api_call(path, param)
+            num_fetched_stations = len(fetched_stations)
             
-            if len(fetched_stations) == 0:
+            if num_fetched_stations == 0:
                 fetched_all_stations = True
             else:
-                start += RadioApi.MAX_ROWS
+                start += num_fetched_stations
                 stations += fetched_stations
         
         self.log("get_stations_by_category Fetched " + str(len(stations)) + " stations.")
